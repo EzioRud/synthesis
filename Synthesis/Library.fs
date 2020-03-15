@@ -72,22 +72,37 @@ let toBinary _ =
     failwith "Not implemented"
 
 let bizFuzz n =
-    failwith "Not implemented"
+    let check i = 
+        match i % 3 = 0 && i % 5 = 0 with
+            | true -> (1, 1, 1)
+            | false -> match (i % 3 = 0, i % 5 = 0) with
+                       | true, false -> (1, 0, 0)
+                       | false, true -> (0, 1, 0)
+                       | _-> (0, 0, 0)
+    let rec bizFuzz i n acc = 
+        match i > n with
+        | true -> acc
+        | _-> match acc, check i with
+              | (a, b, c), (d, e, f) -> bizFuzz (i + 1) n (a + d, b + e, c+ f)
+    bizFuzz 1 n (0, 0, 0)
 
 let monthDay d y =
-    match isLeap(y) && d > 0 && d <= 366 with
-    |true -> match d <= 31 with
-             |true -> "January"
-             |false -> match d > 31 && d <= 59  with
-                       | true -> "February"
-                       | false -> match d > 59 && d <= 90 with
-                                  | true -> "March"
-                                  | false -> match d > 90 && d <= 120  with
-                                             | true -> "April"
-                                             | false -> match d > 334 && d <= 59 with
-                                                        | true -> "November"
-                                                        | false -> "December"
-    | false -> failwith "fail"
+    let isLeapy = isLeap y
+    let rec getD i numOfdays = 
+        let x = match isLeapy && i = 2 with | true -> 1 | _-> 0
+        match d <= numOfdays + x with
+        | true -> match month i with
+                  | (months, _) -> months
+        | false -> match month (i + 1) with
+                   | (_, days) -> getD (i+ 1) (numOfdays + days + x)
+    match isLeapy with
+    | true -> match 1 <= d && d <= 366 with
+              | false -> failwith "fail"
+              | true -> getD 1 31
+    | false -> match 1 <= d && d <= 366 with
+               | false -> failwith "fail"
+               | true -> getD 1 31
+
     
              
 
